@@ -47,6 +47,9 @@ const config: Config = {
       'classic',
       {
         docs: {
+          // Use the generated activity docs as the content source
+          // Default expects a "docs" folder, but our content lives in "activities"
+          path: 'activities',
           sidebarPath: './sidebars.ts',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
