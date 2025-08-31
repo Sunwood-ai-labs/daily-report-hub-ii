@@ -2,8 +2,8 @@ name: 📊 Daily Diff Reports (Forgejo)
 
 on:
   schedule:
-    # Runs daily at 00:10 UTC (adjust as needed)
-    - cron: '10 0 * * *'
+    # Runs daily at 21:00 JST (12:00 UTC)
+    - cron: '0 12 * * *'
   workflow_dispatch:
 
 permissions:
