@@ -2,7 +2,7 @@
 
 <h1>daily-report-hub-ii</h1>
 
-<img src="header.jpg" alt="Forgejo to GitHub mirror workflow" width="720" />
+<img src="header.jpg" alt="Forgejo to GitHub mirror workflow" />
 
 <p>
   <img alt="CI" src="https://img.shields.io/badge/CI-Forgejo_Actions-2185D0?logo=githubactions&logoColor=white" />
