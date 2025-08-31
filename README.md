@@ -185,3 +185,19 @@ GOOGLE_API_KEY=xxxx WEEK_START_DAY=1 python scripts/generate_ai_weekly_report.py
 ```
 
 必要に応じて `DOCS_ACTIVITIES_DIR`（デフォルト `docs/activities`）を変更できます。
+
+---
+
+## 🌐 デプロイ
+
+### GitHub Actions（GitHub Pages）
+
+- ワークフロー: `.github/workflows/gh_pages_deploy.yml`
+- main への push で実行され、`docs` をビルドして GitHub Pages にデプロイします。
+- 事前にリポジトリの Settings > Pages を「GitHub Actions」に設定してください。
+
+### Forgejo（static-pages ブランチ）
+
+- ワークフロー: `.forgejo/workflows/deploy-static-pages.yml`
+- main への push で実行され、`docs` をビルドした成果物を `static-pages` ブランチに強制 push します。
+- ホスティングを別途行う場合は、このブランチを公開対象に設定してください。

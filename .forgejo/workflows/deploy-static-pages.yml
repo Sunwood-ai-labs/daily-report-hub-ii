@@ -1,0 +1,81 @@
+name: Deploy to static-pages (Forgejo)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy-static-pages:
+    runs-on: docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Install dependencies
+        run: cd docs && npm ci
+
+      - name: 1. Check current directory and file existence
+        run: |
+          pwd
+          ls -R ./docs
+
+      - name: 2. Show <br> tags BEFORE replacement
+        run: |
+          echo "--- Searching for <br> in all .md files before replacement ---"
+          grep -r --color=auto "<br>" ./docs || true
+
+      - name: 3. Replace <br> with <br />
+        run: |
+          find ./docs -type f -name "*.md" -exec sed -i 's#<br>#<br />#g' {} +
+          echo "Replacement command executed."
+
+      - name: 4. Show <br> tags AFTER replacement
+        run: |
+          echo "--- Searching for <br> in all .md files after replacement ---"
+          grep -r --color=auto "<br>" ./docs || true
+
+      - name: Build website
+        run: cd docs && npm run build
+
+      - name: Deploy build to static-pages branch (force push)
+        run: |
+          set -euo pipefail
+          git config user.name "Forgejo Actions"
+          git config user.email "actions@forgejo"
+
+          # Stash build output to temp dir
+          SITE_DIR=$(mktemp -d)
+          cp -a docs/build/. "$SITE_DIR"/
+
+          # Switch to static-pages branch
+          git checkout -B static-pages
+
+          # Remove everything except .git
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+
+          # Copy built site to repo root
+          cp -a "$SITE_DIR"/. .
+
+          # Optional: prevent Jekyll processing (harmless on Forgejo)
+          touch .nojekyll
+
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to deploy"
+            exit 0
+          fi
+
+          git commit -m "Deploy to static-pages: $(date '+%Y-%m-%d %H:%M:%S')"
+          git push --force origin static-pages
+
