@@ -1,4 +1,0 @@
-# 📈 Daily Statistics
-
-```diff
-```

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdaily_report_hub=self.webpackChunkdaily_report_hub||[]).push([[117],{2498:(e,r,c)=>{c.d(r,{createArchitectureServices:()=>t.S});var t=c(3009);c(8198)}}]);

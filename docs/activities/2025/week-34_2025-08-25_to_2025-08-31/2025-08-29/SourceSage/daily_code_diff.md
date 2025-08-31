@@ -1,4 +1,0 @@
-# 💻 Daily Code Changes
-
-```diff
-```

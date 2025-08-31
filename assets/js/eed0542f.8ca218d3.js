@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdaily_report_hub=self.webpackChunkdaily_report_hub||[]).push([[2646],{5780:e=>{e.exports=JSON.parse('{"metadata":{"permalink":"/Sunwood-ai-labs_daily-report-hub-ii/blog","page":1,"postsPerPage":10,"totalPages":1,"totalCount":4,"blogDescription":"Blog","blogTitle":"Blog"}}')}}]);

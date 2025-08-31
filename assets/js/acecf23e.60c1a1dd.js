@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdaily_report_hub=self.webpackChunkdaily_report_hub||[]).push([[1903],{1912:a=>{a.exports=JSON.parse('{"blogBasePath":"/Sunwood-ai-labs_daily-report-hub-ii/blog","blogTitle":"Blog","authorsListPath":"/Sunwood-ai-labs_daily-report-hub-ii/blog/authors"}')}}]);
