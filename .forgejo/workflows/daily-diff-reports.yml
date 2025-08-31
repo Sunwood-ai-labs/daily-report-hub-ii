@@ -28,6 +28,8 @@ jobs:
       - name: Generate reports for listed repositories
         env:
           WEEK_START_DAY: ${{ env.WEEK_START_DAY }}
+          # Optional: token for cloning private Forgejo repos in repos.list via ${FORGEJO_TOKEN}
+          FORGEJO_TOKEN: ${{ secrets.FJ_PAT }}
         run: |
           ./scripts/run-batch.sh "${{ env.REPO_LIST_PATH }}"
 
@@ -43,4 +45,3 @@ jobs:
           fi
           git commit -m "📊 Daily diff reports: $(date -u +%Y-%m-%d)"
           git push
-
