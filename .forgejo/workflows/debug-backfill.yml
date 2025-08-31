@@ -1,0 +1,56 @@
+name: 🐛 Debug Backfill (Forgejo)
+
+on:
+  workflow_dispatch:
+    inputs:
+      weeks:
+        description: "Number of weeks to backfill"
+        required: true
+        default: "1"
+      week_start_day:
+        description: "Week start day (0=Sun..6=Sat)"
+        required: true
+        default: "1"
+      repos_list_path:
+        description: "Path to repos list file"
+        required: true
+        default: "repos.list"
+
+permissions:
+  contents: write
+
+jobs:
+  debug-backfill:
+    runs-on: docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show inputs
+        run: |
+          echo "weeks=${{ inputs.weeks }}"
+          echo "week_start_day=${{ inputs.week_start_day }}"
+          echo "repos_list_path=${{ inputs.repos_list_path }}"
+
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh
+
+      - name: Run backfill with TRACE
+        env:
+          WEEK_START_DAY: ${{ inputs.week_start_day }}
+          TRACE: 1
+          # Optional token for cloning private Forgejo repos in repos.list via ${FORGEJO_TOKEN}
+          FORGEJO_TOKEN: ${{ secrets.FJ_PAT }}
+        run: |
+          ./scripts/run-backfill-weeks.sh "${{ inputs.weeks }}" "${{ inputs.repos_list_path }}"
+
+      - name: List generated outputs
+        run: |
+          set -euo pipefail
+          echo '--- .tmp/raw ---'
+          find .tmp/raw -maxdepth 2 -type d -print 2>/dev/null || true
+          echo '--- docs/activities ---'
+          find docs/activities -maxdepth 2 -type d -print 2>/dev/null || true
+

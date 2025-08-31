@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Optional trace for debugging
+if [[ "${TRACE:-}" == "1" || "${DEBUG:-}" == "1" ]]; then
+  set -x
+fi
+
 # Orchestrate analysis and report generation for a single repository
 # Usage: report-one.sh <repo_clone_url_or_path> [WEEK_START_DAY] [DATE]
 
 REPO_SRC=${1:?"Repository URL or local path is required"}
 WEEK_START_DAY=${2:-1}
 REPORT_DATE=${3:-$(date '+%Y-%m-%d')}
+# Keep a unified DATE variable used across helper scripts
+DATE="$REPORT_DATE"
 
 WORK_ROOT=${WORK_ROOT:-"work"}
 RAW_ROOT=${RAW_ROOT:-".tmp/raw"}
