@@ -155,3 +155,27 @@ WEEK_START_DAY=1 ./scripts/run-backfill-weeks.sh 6 path/to/repos.list
 ```
 
 メモ: 日次定期実行（`daily-diff-reports.yml`）は当日分のみ実行しますが、backfill スクリプトは指定した期間を日毎に遡って処理します。
+
+---
+
+## 🤖 AIレポート（Gemini）
+
+- 日報生成: `.forgejo/workflows/daily-ai-report.yml`
+  - 既存の日次レポート出力（`docs/activities/.../YYYY-MM-DD/<repo>/daily_*.md`）を読み取り、各リポジトリ配下に `ai_daily_report.md` を生成します。
+  - LiteLLM 経由で Gemini (gemini-2.5-pro) を使用します。
+- 週報生成: `.forgejo/workflows/weekly-ai-report.yml`
+  - その週のフォルダ直下（`docs/activities/<YEAR>/<week-XX_...>/`）に `ai_weekly_report.md` を生成します。
+
+### 必要なシークレット
+
+- `GOOGLE_API_KEY`: Gemini API キー（LiteLLM が参照）
+
+### ローカル実行例
+
+```
+pip install litellm
+GOOGLE_API_KEY=xxxx python scripts/generate_ai_daily_report.py
+GOOGLE_API_KEY=xxxx WEEK_START_DAY=1 python scripts/generate_ai_weekly_report.py
+```
+
+必要に応じて `DOCS_ACTIVITIES_DIR`（デフォルト `docs/activities`）を変更できます。
