@@ -1,9 +1,45 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Euo pipefail
+
+# Default to Japan time unless caller overrides TZ
+TZ=${TZ:-Asia/Tokyo}
+export TZ
+
+# Error trap to surface failing command and context
+on_error() {
+  local exit_code=$?
+  local line=${BASH_LINENO[0]:-unknown}
+  echo "\n💥 report-one.sh failed (exit=${exit_code}) at line ${line}" >&2
+  echo "  REPO_SRC=${REPO_SRC:-}" >&2
+  echo "  REPO_NAME=${REPO_NAME:-}" >&2
+  echo "  DATE=${DATE:-}" >&2
+  echo "  CLONE_DIR=${CLONE_DIR:-}" >&2
+  echo "  OUT_DIR=${OUT_DIR:-}" >&2
+  # Show basic git status if available
+  if [ -n "${CLONE_DIR:-}" ] && [ -d "${CLONE_DIR}/.git" ]; then
+    echo "--- git status (${REPO_NAME}) ---" >&2
+    git -C "$CLONE_DIR" status -sb 2>&1 || true
+    echo "--- git last commits (${REPO_NAME}) ---" >&2
+    git -C "$CLONE_DIR" log --oneline -n 5 2>&1 || true
+    echo "--- git remotes (${REPO_NAME}) ---" >&2
+    git -C "$CLONE_DIR" remote -v 2>&1 || true
+  fi
+  # Show OUT_DIR contents if available
+  if [ -n "${OUT_DIR:-}" ] && [ -d "${OUT_DIR}" ]; then
+    echo "--- OUT_DIR contents ---" >&2
+    ls -la "$OUT_DIR" 2>&1 || true
+  fi
+}
+trap on_error ERR
 
 # Optional trace for debugging
 if [[ "${TRACE:-}" == "1" || "${DEBUG:-}" == "1" ]]; then
   set -x
+fi
+
+QUIET=1
+if [[ "${TRACE:-}" == "1" || "${DEBUG:-}" == "1" ]]; then
+  QUIET=0
 fi
 
 # Orchestrate analysis and report generation for a single repository
@@ -48,7 +84,12 @@ fi
 
 # Analyze first (to decide skip/no-skip)
 OUT_DIR="$RAW_ROOT/$REPO_NAME-$DATE"
-OUT_DIR="$OUT_DIR" scripts/analyze-git-activity.sh "$CLONE_DIR" "$DATE" >/dev/null
+if [ "$QUIET" -eq 1 ]; then
+  OUT_DIR="$OUT_DIR" scripts/analyze-git-activity.sh "$CLONE_DIR" "$DATE" >/dev/null
+else
+  echo "Running analyze-git-activity.sh (OUT_DIR=$OUT_DIR)" >&2
+  OUT_DIR="$OUT_DIR" scripts/analyze-git-activity.sh "$CLONE_DIR" "$DATE"
+fi
 
 # If no commits for the day, skip creating any docs
 COMMITS_COUNT=$(wc -l < "$OUT_DIR/daily_commits_raw.txt" 2>/dev/null || echo 0)
@@ -58,14 +99,30 @@ if [ "${COMMITS_COUNT:-0}" -eq 0 ]; then
 fi
 
 # Compute week info (only when generating)
-source scripts/week-info.sh "$WEEK_START_DAY" "$REPORT_DATE" >/dev/null
+if [ "$QUIET" -eq 1 ]; then
+  source scripts/week-info.sh "$WEEK_START_DAY" "$REPORT_DATE" >/dev/null
+else
+  echo "Sourcing week-info.sh (WEEK_START_DAY=$WEEK_START_DAY, DATE=$REPORT_DATE)" >&2
+  source scripts/week-info.sh "$WEEK_START_DAY" "$REPORT_DATE"
+fi
 
 # Build target structure
-TARGET_INFO=$(scripts/create-docusaurus-structure.sh "$REPORT_ROOT" "$YEAR" "$WEEK_FOLDER" "$DATE" "$REPO_NAME" "$WEEK_NUMBER" "$WEEK_START_DATE" "$WEEK_END_DATE")
+if [ "$QUIET" -eq 1 ]; then
+  TARGET_INFO=$(scripts/create-docusaurus-structure.sh "$REPORT_ROOT" "$YEAR" "$WEEK_FOLDER" "$DATE" "$REPO_NAME" "$WEEK_NUMBER" "$WEEK_START_DATE" "$WEEK_END_DATE")
+else
+  echo "Creating Docusaurus structure..." >&2
+  TARGET_INFO=$(scripts/create-docusaurus-structure.sh "$REPORT_ROOT" "$YEAR" "$WEEK_FOLDER" "$DATE" "$REPO_NAME" "$WEEK_NUMBER" "$WEEK_START_DATE" "$WEEK_END_DATE")
+  echo "TARGET_INFO=$TARGET_INFO" >&2
+fi
 TARGET_DIR=$(echo "$TARGET_INFO" | sed -n 's/^TARGET_DIR=//p')
 
 # Generate markdowns
-scripts/generate-markdown-reports.sh "$OUT_DIR" "$TARGET_DIR" "$REPO_NAME" "$DATE" >/dev/null
+if [ "$QUIET" -eq 1 ]; then
+  scripts/generate-markdown-reports.sh "$OUT_DIR" "$TARGET_DIR" "$REPO_NAME" "$DATE" >/dev/null
+else
+  echo "Generating markdown reports into $TARGET_DIR" >&2
+  scripts/generate-markdown-reports.sh "$OUT_DIR" "$TARGET_DIR" "$REPO_NAME" "$DATE"
+fi
 
 # README fallback
 if [ ! -f "$TARGET_DIR/README.md" ]; then

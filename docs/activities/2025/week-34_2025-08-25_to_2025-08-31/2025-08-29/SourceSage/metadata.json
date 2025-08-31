@@ -1,10 +1,10 @@
 {
-  "repository": "./",
-  "date": "2025-08-31",
+  "repository": "https://github.com/Sunwood-ai-labs/SourceSage",
+  "date": "2025-08-29",
   "week_folder": "week-34_2025-08-25_to_2025-08-31",
   "week_number": 34,
   "week_start_date": "2025-08-25",
   "week_end_date": "2025-08-31",
-  "daily_commit_count": 31,
-  "daily_files_changed": 3
+  "daily_commit_count": 50,
+  "daily_files_changed": 0
 }

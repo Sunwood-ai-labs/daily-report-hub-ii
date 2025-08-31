@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Default to Japan time unless caller overrides TZ
+TZ=${TZ:-Asia/Tokyo}
+export TZ
+
 # Analyze git activity for a given repository directory and date
 # Usage: analyze-git-activity.sh <repo_dir> [DATE]
 

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Default to Japan time unless caller overrides TZ
+TZ=${TZ:-Asia/Tokyo}
+export TZ
+
 # Create Docusaurus-like structure under REPORT_ROOT for given metadata
 # Usage: create-docusaurus-structure.sh <REPORT_ROOT> <YEAR> <WEEK_FOLDER> <DATE> <REPO_NAME> <WEEK_NUMBER> <WEEK_START_DATE> <WEEK_END_DATE>
 
@@ -75,4 +79,3 @@ EOF
 fi
 
 echo "TARGET_DIR=$TARGET_DIR"
-

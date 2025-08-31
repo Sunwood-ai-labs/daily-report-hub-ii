@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Default to Japan time unless caller overrides TZ
+TZ=${TZ:-Asia/Tokyo}
+export TZ
+
 # Run reports for all repositories listed in repos.list
 # Usage: run-batch.sh [repos_list_path]
 
@@ -25,7 +29,8 @@ while IFS= read -r line; do
   echo "=============================="
   echo "Processing: $REPO_URL"
   if ! scripts/report-one.sh "$REPO_URL" "$WEEK_START_DAY" "$REPORT_DATE"; then
-    echo "❌ Failed to process: $REPO_URL" >&2
+    rc=$?
+    echo "❌ Failed to process: $REPO_URL (exit $rc)" >&2
     FAILS+=("$REPO_URL")
     # Continue with next repository instead of aborting the whole job
     continue

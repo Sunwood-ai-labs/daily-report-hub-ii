@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Default to Japan time unless caller overrides TZ
+TZ=${TZ:-Asia/Tokyo}
+export TZ
+
 # Generate Markdown reports from OUT_DIR raw files into DEST_DIR
 # Usage: generate-markdown-reports.sh <OUT_DIR> <DEST_DIR> [REPO_SLUG] [DATE]
 

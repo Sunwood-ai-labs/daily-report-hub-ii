@@ -22,6 +22,8 @@ permissions:
 jobs:
   debug-backfill:
     runs-on: docker
+    env:
+      TZ: Asia/Tokyo
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

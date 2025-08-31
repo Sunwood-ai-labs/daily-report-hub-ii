@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Default to Japan time unless caller overrides TZ
+TZ=${TZ:-Asia/Tokyo}
+export TZ
+
 # Backfill daily reports for the past N weeks (inclusive of today)
 # Usage: run-backfill-weeks.sh <weeks> [repos_list_path]
 # Env: WEEK_START_DAY (default 1)
@@ -35,4 +39,3 @@ for offset in $(seq 0 $((DAYS-1))); do
 done
 
 echo "Backfill complete."
-

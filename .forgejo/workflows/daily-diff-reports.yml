@@ -12,6 +12,7 @@ permissions:
 env:
   WEEK_START_DAY: 1
   REPO_LIST_PATH: repos.list
+  TZ: Asia/Tokyo
 
 jobs:
   build-reports:

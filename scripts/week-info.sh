@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Default to Japan time unless caller overrides TZ
+TZ=${TZ:-Asia/Tokyo}
+export TZ
+
 # Calculate weekly info. Usage: week-info.sh [WEEK_START_DAY] [DATE]
 # - WEEK_START_DAY: 0=Sun, 1=Mon, ... 6=Sat (default 1)
 # - DATE: YYYY-MM-DD for the report date (default: today)
@@ -36,4 +40,3 @@ echo "WEEK_NUMBER=$WEEK_NUMBER"
 echo "WEEK_START_DATE=$WEEK_START_DATE"
 echo "WEEK_END_DATE=$WEEK_END_DATE"
 echo "WEEK_FOLDER=$WEEK_FOLDER"
-
