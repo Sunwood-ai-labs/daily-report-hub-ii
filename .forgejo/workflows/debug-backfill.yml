@@ -6,7 +6,7 @@ on:
       weeks:
         description: "Number of weeks to backfill"
         required: true
-        default: "1"
+        default: "4"
       week_start_day:
         description: "Week start day (0=Sun..6=Sat)"
         required: true
