@@ -7,9 +7,17 @@ set -euo pipefail
 REPO_DIR=${1:?"repo_dir is required"}
 DATE=${2:-$(date '+%Y-%m-%d')}
 OUT_DIR=${OUT_DIR:-"$PWD/_analysis_out"}
-# Make absolute to be safe after pushd
-OUT_DIR=$(readlink -f "$OUT_DIR")
+# Ensure directory exists, then resolve to absolute path portably
 mkdir -p "$OUT_DIR"
+if command -v realpath >/dev/null 2>&1; then
+  OUT_DIR=$(realpath "$OUT_DIR")
+elif command -v readlink >/dev/null 2>&1 && readlink -f / >/dev/null 2>&1; then
+  # GNU readlink -f is available
+  OUT_DIR=$(readlink -f "$OUT_DIR")
+else
+  # Fallback: use pwd -P from within the directory
+  OUT_DIR="$(cd "$OUT_DIR" && pwd -P)"
+fi
 
 pushd "$REPO_DIR" >/dev/null
 
