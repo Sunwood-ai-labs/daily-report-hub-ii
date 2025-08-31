@@ -41,7 +41,7 @@ jobs:
 
           # Add GitHub remote with token (fixed target repo)
           git remote remove github 2>/dev/null || true
-          git remote add github "https://${GH_TOKEN}@github.com/Sunwood-ai-labs/forgejo-to-github.git"
+          git remote add github "https://${GH_TOKEN}@github.com/Sunwood-ai-labs/daily-report-hub-ii.git"
 
           # Mirror all refs (branches, tags, deletions) to GitHub
           git push --mirror github

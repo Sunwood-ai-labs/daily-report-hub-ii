@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>forgejo-to-github</h1>
+<h1>daily-report-hub-ii</h1>
 
 <img src="header.jpg" alt="Forgejo to GitHub mirror workflow" width="720" />
 
