@@ -46,6 +46,19 @@ jobs:
         run: |
           ./scripts/run-backfill-weeks.sh "${{ inputs.weeks }}" "${{ inputs.repos_list_path }}"
 
+      - name: Commit and push changes if any
+        run: |
+          set -euo pipefail
+          git config user.name "Forgejo Actions"
+          git config user.email "actions@forgejo"
+          git add docs/activities || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "🐛 Debug backfill (${{ inputs.weeks }} weeks, start day=${{ inputs.week_start_day }}): $(date -u +%Y-%m-%d)"
+          git push
+
       - name: List generated outputs
         run: |
           set -euo pipefail
@@ -53,4 +66,3 @@ jobs:
           find .tmp/raw -maxdepth 2 -type d -print 2>/dev/null || true
           echo '--- docs/activities ---'
           find docs/activities -maxdepth 2 -type d -print 2>/dev/null || true
-
