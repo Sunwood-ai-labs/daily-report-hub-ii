@@ -39,16 +39,23 @@ else
   git clone --no-single-branch "$REPO_SRC" "$CLONE_DIR"
 fi
 
-# Compute week info
+# Analyze first (to decide skip/no-skip)
+OUT_DIR="$RAW_ROOT/$REPO_NAME-$DATE"
+OUT_DIR="$OUT_DIR" scripts/analyze-git-activity.sh "$CLONE_DIR" "$DATE" >/dev/null
+
+# If no commits for the day, skip creating any docs
+COMMITS_COUNT=$(wc -l < "$OUT_DIR/daily_commits_raw.txt" 2>/dev/null || echo 0)
+if [ "${COMMITS_COUNT:-0}" -eq 0 ]; then
+  echo "ℹ️  No commits for $DATE in $REPO_NAME — skipping report."
+  exit 0
+fi
+
+# Compute week info (only when generating)
 source scripts/week-info.sh "$WEEK_START_DAY" "$REPORT_DATE" >/dev/null
 
 # Build target structure
 TARGET_INFO=$(scripts/create-docusaurus-structure.sh "$REPORT_ROOT" "$YEAR" "$WEEK_FOLDER" "$DATE" "$REPO_NAME" "$WEEK_NUMBER" "$WEEK_START_DATE" "$WEEK_END_DATE")
 TARGET_DIR=$(echo "$TARGET_INFO" | sed -n 's/^TARGET_DIR=//p')
-
-# Analyze
-OUT_DIR="$RAW_ROOT/$REPO_NAME-$DATE"
-OUT_DIR="$OUT_DIR" scripts/analyze-git-activity.sh "$CLONE_DIR" "$DATE" >/dev/null
 
 # Generate markdowns
 scripts/generate-markdown-reports.sh "$OUT_DIR" "$TARGET_DIR" "$REPO_NAME" "$DATE" >/dev/null
@@ -59,7 +66,6 @@ if [ ! -f "$TARGET_DIR/README.md" ]; then
 fi
 
 # metadata
-COMMITS_COUNT=$(wc -l < "$OUT_DIR/daily_commits_raw.txt" 2>/dev/null || echo 0)
 FILES_CHANGED=$(grep -c '^' "$OUT_DIR/daily_cumulative_diff_raw.txt" 2>/dev/null || echo 0)
 cat > "$TARGET_DIR/metadata.json" << EOF
 {

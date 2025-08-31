@@ -135,8 +135,23 @@ docs/activities/
 - `scripts/create-docusaurus-structure.sh`: 出力ディレクトリ構成作成
 - `scripts/report-one.sh`: 1 リポジトリの一括処理
 - `scripts/run-batch.sh`: リスト全体の処理
+- `scripts/run-backfill-weeks.sh`: 指定した週間分（今日を含む過去N週間）の日次レポートを一括生成（コミットがない日はスキップ）
 
 ### 注意
 
 - プライベートリポジトリにアクセスする場合は、`repos.list` でトークン埋め込み URL を使用するか、ランナーに適切な資格情報を設定してください。
 - 一時/作業ディレクトリ（`work/`, `.tmp/`）は `.gitignore` 済みです。
+
+### 初期スタートセット（過去N週間の一括生成）
+
+過去N週間分のレポートをまとめて作成するには、次のスクリプトを使います。コミットが無い日は自動的にスキップされ、レポートは作成されません。
+
+```
+# 例: 過去4週間を対象に backfill（repos.list を使用）
+./scripts/run-backfill-weeks.sh 4
+
+# 例: リポジトリ一覧を指定し、週の開始曜日を変更（0=日,1=月,...）
+WEEK_START_DAY=1 ./scripts/run-backfill-weeks.sh 6 path/to/repos.list
+```
+
+メモ: 日次定期実行（`daily-diff-reports.yml`）は当日分のみ実行しますが、backfill スクリプトは指定した期間を日毎に遡って処理します。
