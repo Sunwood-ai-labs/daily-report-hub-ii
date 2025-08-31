@@ -17,6 +17,8 @@
 
 Forgejo から GitHub へリポジトリを自動同期する Forgejo Actions ワークフローです。
 
+あわせて、Forgejo 側で事前にリスト化した複数リポジトリから日次の差分レポートを生成し、本リポジトリ内に保存する定時ジョブも用意しました。
+
 ## 🚀 使い方
 
 1) Forgejo のこのリポジトリに Secrets を設定
@@ -67,3 +69,74 @@ run: |
 ## 📄 ファイル
 
 - `.forgejo/workflows/sync-to-github.yml`: 同期用ワークフロー本体。
+
+---
+
+## 📊 日次差分レポート（Forgejo スケジュール実行）
+
+### 概要
+
+`.forgejo/workflows/daily-diff-reports.yml` が毎日 00:10 (UTC) に起動し、`repos.list` に列挙した各リポジトリをクローンして当日の変更を解析し、`docs/activities/<年>/<週>/YYYY-MM-DD/<リポジトリ名>/` に Markdown レポートを生成・コミットします。
+
+### 設定手順
+
+1) リポジトリ一覧を編集
+
+`repos.list` にクローン URL またはパスを 1 行ずつ列挙します。空行と `#` で始まる行は無視されます。
+
+```
+# 例: 同一 Forgejo の公開リポジトリ
+https://forgejo.example.com/your-org/awesome-repo.git
+
+# 例: GitHub 上の公開リポジトリ
+https://github.com/your-org/another-repo.git
+
+# 例: このリポジトリ自身（デモ）
+./
+```
+
+環境変数を含めて記述することもできます（実行時に展開）。例:
+
+```
+https://${FORGEJO_TOKEN}@forgejo.example.com/your-org/private-repo.git
+```
+
+必要に応じて Forgejo リポジトリの「Settings > Actions > Secrets」に `FORGEJO_TOKEN` などを設定し、ワークフローの「Generate reports」ステップに `env` として渡してください。
+
+2) 週の開始曜日や実行時刻の調整（任意）
+
+- 週の開始曜日は `WEEK_START_DAY`（0=日, 1=月, ...）で制御します（デフォルト: 1）。
+- 実行時刻はワークフロー内の `cron` を編集してください。
+
+### 出力パス例
+
+```
+docs/activities/
+└── 2025/
+    └── week-06_2025-08-04_to_2025-08-10/
+        └── 2025-08-05/
+            └── your-repo/
+                ├── daily_summary.md
+                ├── daily_commits.md
+                ├── daily_cumulative_diff.md
+                ├── daily_diff_stats.md
+                ├── daily_code_diff.md
+                ├── latest_diff.md
+                ├── latest_code_diff.md
+                ├── README.md
+                └── metadata.json
+```
+
+### スクリプト
+
+- `scripts/week-info.sh`: 日付から週情報を計算
+- `scripts/analyze-git-activity.sh`: Git ログと差分の生データ抽出
+- `scripts/generate-markdown-reports.sh`: Markdown 生成
+- `scripts/create-docusaurus-structure.sh`: 出力ディレクトリ構成作成
+- `scripts/report-one.sh`: 1 リポジトリの一括処理
+- `scripts/run-batch.sh`: リスト全体の処理
+
+### 注意
+
+- プライベートリポジトリにアクセスする場合は、`repos.list` でトークン埋め込み URL を使用するか、ランナーに適切な資格情報を設定してください。
+- 一時/作業ディレクトリ（`work/`, `.tmp/`）は `.gitignore` 済みです。
