@@ -32,6 +32,7 @@ jobs:
       - name: Generate AI daily reports
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DOCS_ACTIVITIES_DIR: docs/activities
         run: python scripts/generate_ai_daily_report.py
 
@@ -47,4 +48,3 @@ jobs:
           fi
           git commit -m "🤖 AI daily reports (Gemini): $(date -u +%Y-%m-%d)"
           git push
-

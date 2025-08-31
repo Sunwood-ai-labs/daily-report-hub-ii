@@ -154,9 +154,14 @@ def save_daily_report(repo_name: str, repo_dir: Path, date: str, clean_md: str):
 
 def main():
     print("🚀 Gemini-based Daily Report Generator")
-    if not os.getenv('GOOGLE_API_KEY'):
-        print("❌ GOOGLE_API_KEY is not set. Aborting.")
+    # Accept both env names: GEMINI_API_KEY (LiteLLM common) and GOOGLE_API_KEY (official SDK examples)
+    api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+    if not api_key:
+        print("❌ GEMINI_API_KEY / GOOGLE_API_KEY is not set. Aborting.")
         return
+    # Normalize for downstream libs
+    os.environ['GEMINI_API_KEY'] = api_key
+    os.environ.setdefault('GOOGLE_API_KEY', api_key)
 
     base_dir = Path(os.getenv('DOCS_ACTIVITIES_DIR', 'docs/activities'))
     date, repo_dirs = find_todays_repos(base_dir)
@@ -195,4 +200,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

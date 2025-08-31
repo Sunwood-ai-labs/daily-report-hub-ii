@@ -168,12 +168,18 @@ WEEK_START_DAY=1 ./scripts/run-backfill-weeks.sh 6 path/to/repos.list
 
 ### 必要なシークレット
 
-- `GOOGLE_API_KEY`: Gemini API キー（LiteLLM が参照）
+- `GEMINI_API_KEY` または `GOOGLE_API_KEY`: Gemini API キー（どちらの環境変数名でも可）
 
 ### ローカル実行例
 
 ```
 pip install litellm
+
+# どちらか一方でOK（両方セットでも可）
+GEMINI_API_KEY=xxxx python scripts/generate_ai_daily_report.py
+GEMINI_API_KEY=xxxx WEEK_START_DAY=1 python scripts/generate_ai_weekly_report.py
+
+# または
 GOOGLE_API_KEY=xxxx python scripts/generate_ai_daily_report.py
 GOOGLE_API_KEY=xxxx WEEK_START_DAY=1 python scripts/generate_ai_weekly_report.py
 ```

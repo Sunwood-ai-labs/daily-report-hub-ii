@@ -212,9 +212,13 @@ def save_weekly_report(week_dir: Path, week_info: dict, clean_md: str):
 
 def main():
     print("🚀 Gemini-based Weekly Report Generator")
-    if not os.getenv('GOOGLE_API_KEY'):
-        print("❌ GOOGLE_API_KEY is not set. Aborting.")
+    # Accept both env names to be flexible
+    api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+    if not api_key:
+        print("❌ GEMINI_API_KEY / GOOGLE_API_KEY is not set. Aborting.")
         return
+    os.environ['GEMINI_API_KEY'] = api_key
+    os.environ.setdefault('GOOGLE_API_KEY', api_key)
 
     base_dir = Path(os.getenv('DOCS_ACTIVITIES_DIR', 'docs/activities'))
     week_start_day = int(os.getenv('WEEK_START_DAY', '1'))

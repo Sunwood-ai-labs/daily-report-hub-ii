@@ -33,6 +33,7 @@ jobs:
       - name: Generate AI weekly report
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DOCS_ACTIVITIES_DIR: docs/activities
           WEEK_START_DAY: ${{ env.WEEK_START_DAY }}
         run: python scripts/generate_ai_weekly_report.py
@@ -49,4 +50,3 @@ jobs:
           fi
           git commit -m "📅 AI weekly report (Gemini): $(date -u +%Y-%m-%d)"
           git push
-
