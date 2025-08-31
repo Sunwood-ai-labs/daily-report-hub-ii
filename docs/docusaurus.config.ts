@@ -18,7 +18,8 @@ const config: Config = {
   url: 'https://sunwood-ai-labs.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/Sunwood-ai-labs/daily-report-hub-ii/',
+  // Allow CI/CD to override via env var BASE_URL
+  baseUrl: process.env.BASE_URL || '/daily-report-hub-ii/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
