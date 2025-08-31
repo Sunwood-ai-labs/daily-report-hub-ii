@@ -8,6 +8,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    outputs:
+      has_site: ${{ steps.detect.outputs.has_site }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -15,10 +17,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: npm
-          cache-dependency-path: docs/package-lock.json
+      
+      - id: detect
+        name: Detect docs site
+        run: |
+          if [ -f docs/package.json ]; then
+            echo "has_site=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_site=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Install dependencies
+        if: steps.detect.outputs.has_site == 'true'
         run: cd docs && npm ci
 
       - name: 1. Check current directory and file existence
@@ -42,13 +52,14 @@ jobs:
           grep -r --color=auto "<br>" ./docs || true
 
       - name: Test build website
+        if: steps.detect.outputs.has_site == 'true'
         run: cd docs && npm run build
 
   deploy:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && needs.test.outputs.has_site == 'true'
     permissions:
       contents: read
       pages: write
@@ -63,8 +74,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: npm
-          cache-dependency-path: docs/package-lock.json
 
       - name: Install dependencies
         run: cd docs && npm ci
@@ -101,4 +110,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

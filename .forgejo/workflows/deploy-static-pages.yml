@@ -19,11 +19,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: npm
-          cache-dependency-path: docs/package-lock.json
 
-      - name: Install dependencies
-        run: cd docs && npm ci
+      - name: Install dependencies (if site exists)
+        run: |
+          if [ -f docs/package.json ]; then
+            cd docs && npm ci
+          else
+            echo "No docs/package.json. Skipping npm ci."
+          fi
 
       - name: 1. Check current directory and file existence
         run: |
@@ -45,8 +48,13 @@ jobs:
           echo "--- Searching for <br> in all .md files after replacement ---"
           grep -r --color=auto "<br>" ./docs || true
 
-      - name: Build website
-        run: cd docs && npm run build
+      - name: Build website (if site exists)
+        run: |
+          if [ -f docs/package.json ]; then
+            cd docs && npm run build
+          else
+            echo "No docs/package.json. Skipping build."
+          fi
 
       - name: Deploy build to static-pages branch (force push)
         run: |
@@ -54,9 +62,18 @@ jobs:
           git config user.name "Forgejo Actions"
           git config user.email "actions@forgejo"
 
-          # Stash build output to temp dir
+          # Decide what to publish
           SITE_DIR=$(mktemp -d)
-          cp -a docs/build/. "$SITE_DIR"/
+          if [ -d docs/build ] && [ -f docs/package.json ]; then
+            echo "Publishing docs/build"
+            cp -a docs/build/. "$SITE_DIR"/
+          elif [ -d docs ]; then
+            echo "Publishing raw docs/ (no build)"
+            cp -a docs/. "$SITE_DIR"/
+          else
+            echo "No docs/ directory to publish. Exiting."
+            exit 0
+          fi
 
           # Switch to static-pages branch
           git checkout -B static-pages
@@ -64,7 +81,7 @@ jobs:
           # Remove everything except .git
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
 
-          # Copy built site to repo root
+          # Copy site to repo root
           cp -a "$SITE_DIR"/. .
 
           # Optional: prevent Jekyll processing (harmless on Forgejo)
@@ -78,4 +95,3 @@ jobs:
 
           git commit -m "Deploy to static-pages: $(date '+%Y-%m-%d %H:%M:%S')"
           git push --force origin static-pages
-
