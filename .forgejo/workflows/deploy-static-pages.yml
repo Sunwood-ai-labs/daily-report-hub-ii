@@ -20,6 +20,9 @@ jobs:
         run: |
           echo "PAGES_BASE_URL=${PAGES_BASE_URL:-http://192.168.0.131:8080}" >> $GITHUB_ENV
           echo "FORGEJO_BASE_URL=${FORGEJO_BASE_URL:-http://192.168.0.131:3000}" >> $GITHUB_ENV
+          REPO_UNDERSCORE=$(echo "$GITHUB_REPOSITORY" | tr '/' '_')
+          echo "REPO_UNDERSCORE=${REPO_UNDERSCORE}" >> $GITHUB_ENV
+          echo "PAGE_PATH=/${REPO_UNDERSCORE}/" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -57,7 +60,7 @@ jobs:
       - name: Build website (if site exists)
         run: |
           if [ -f docs/package.json ]; then
-            cd docs && npm run build
+            cd docs && BASE_URL="${PAGE_PATH}" SITE_URL="${PAGES_BASE_URL}" npm run build
           else
             echo "No docs/package.json. Skipping build."
           fi
@@ -71,7 +74,7 @@ jobs:
             echo "FORGEJO_TOKEN not set; skip updating repository Website URL."
             exit 0
           fi
-          TARGET_URL="${PAGES_BASE_URL}/${GITHUB_REPOSITORY}"
+          TARGET_URL="${PAGES_BASE_URL}/${REPO_UNDERSCORE}/"
           echo "Setting repository Website to: ${TARGET_URL}"
           curl -fsSL -X PATCH \
             -H "Content-Type: application/json" \
@@ -128,7 +131,7 @@ jobs:
           touch .nojekyll
 
           # Show expected URL path for this repo
-          echo "Site URL: ${PAGES_BASE_URL}/${GITHUB_REPOSITORY}"
+          echo "Site URL: ${PAGES_BASE_URL}/${REPO_UNDERSCORE}/"
 
           git add -A
           if git diff --staged --quiet; then

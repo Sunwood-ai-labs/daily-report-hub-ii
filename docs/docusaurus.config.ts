@@ -14,8 +14,8 @@ const config: Config = {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
   },
 
-  // Set the production url of your site here
-  url: 'https://sunwood-ai-labs.github.io',
+  // Set the production url of your site here (override via SITE_URL in CI)
+  url: process.env.SITE_URL || 'https://sunwood-ai-labs.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   // Allow CI/CD to override via env var BASE_URL
