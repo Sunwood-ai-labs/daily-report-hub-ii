@@ -15,6 +15,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set defaults
+        run: |
+          echo "PAGES_BASE_URL=${PAGES_BASE_URL:-http://192.168.0.131:8080}" >> $GITHUB_ENV
+          echo "FORGEJO_BASE_URL=${FORGEJO_BASE_URL:-http://192.168.0.131:3000}" >> $GITHUB_ENV
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -56,6 +61,23 @@ jobs:
             echo "No docs/package.json. Skipping build."
           fi
 
+      - name: Update Forgejo repo Website URL (optional)
+        env:
+          FORGEJO_TOKEN: ${{ secrets.FJ_PAT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FORGEJO_TOKEN:-}" ]; then
+            echo "FORGEJO_TOKEN not set; skip updating repository Website URL."
+            exit 0
+          fi
+          TARGET_URL="${PAGES_BASE_URL}/${GITHUB_REPOSITORY}"
+          echo "Setting repository Website to: ${TARGET_URL}"
+          curl -fsSL -X PATCH \
+            -H "Content-Type: application/json" \
+            -H "Authorization: token ${FORGEJO_TOKEN}" \
+            "${FORGEJO_BASE_URL}/api/v1/repos/${GITHUB_REPOSITORY}" \
+            -d "{\"website\":\"${TARGET_URL}\"}" || echo "Warning: failed to update Website URL (non-fatal)"
+
       - name: Deploy build to static-pages branch (force push)
         run: |
           set -euo pipefail
@@ -64,14 +86,31 @@ jobs:
 
           # Decide what to publish
           SITE_DIR=$(mktemp -d)
-          if [ -d docs/build ] && [ -f docs/package.json ]; then
+          if [ -f index.html ]; then
+            echo "Publishing repository root (index.html found)"
+            rsync -a ./ "$SITE_DIR"/ \
+              --exclude '.git' \
+              --exclude '.github' \
+              --exclude '.forgejo' \
+              --exclude 'docs' \
+              --exclude 'work' \
+              --exclude '.tmp' \
+              --exclude 'node_modules' \
+              --exclude '*.sh' \
+              --exclude '*.py' \
+              --exclude '*.yml' \
+              --exclude '*.yaml'
+          elif [ -d docs/build ] && [ -f docs/package.json ]; then
             echo "Publishing docs/build"
             cp -a docs/build/. "$SITE_DIR"/
+          elif [ -f docs/index.html ]; then
+            echo "Publishing raw docs/ (index.html found)"
+            cp -a docs/. "$SITE_DIR"/
           elif [ -d docs ]; then
-            echo "Publishing raw docs/ (no build)"
+            echo "Publishing raw docs/ (no index.html check)"
             cp -a docs/. "$SITE_DIR"/
           else
-            echo "No docs/ directory to publish. Exiting."
+            echo "No site detected (no root index.html or docs/). Exiting."
             exit 0
           fi
 
@@ -86,6 +125,9 @@ jobs:
 
           # Optional: prevent Jekyll processing (harmless on Forgejo)
           touch .nojekyll
+
+          # Show expected URL path for this repo
+          echo "Site URL: ${PAGES_BASE_URL}/${GITHUB_REPOSITORY}"
 
           git add -A
           if git diff --staged --quiet; then
