@@ -1,0 +1,10 @@
+# Work dirs
+work/
+.tmp/
+
+# Node/Docusaurus common ignores (future-proof)
+node_modules/
+build/
+.docusaurus/
+.cache/
+
